@@ -1,0 +1,43 @@
+{
+  "entities": [
+    {
+      "name": "user",
+      "fields": [
+        {
+          "name": "name",
+          "type": "STRING",
+          "required": true
+        },
+        {
+          "name": "email",
+          "type": "STRING"
+        },
+        {
+          "name": "todos",
+          "type": "ONE_TO_MANY",
+          "entity": "todo"
+        }
+      ]
+    },
+    {
+      "name": "todo",
+      "fields": [
+        {
+          "name": "title",
+          "type": "STRING",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "STRING"
+        },
+        {
+          "name": "user",
+          "entity": "user",
+          "type": "MANY_TO_ONE",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

@@ -177,7 +177,7 @@ public class AppTest {
                 .put("height", 1.73)
                 .build();
 
-        UnaryOperator<Map<String, Object>> create = new Neo4JDatabase().buildCreate(entity);
+        UnaryOperator<Map<String, Object>> create = new Neo4JDatabase().buildAddEntity(entity.getName());
 
         Map<String, Object> result = create.apply(user);
 

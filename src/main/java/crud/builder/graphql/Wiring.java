@@ -13,6 +13,7 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import static crud.builder.graphql.Utils.createMutationName;
+import static crud.builder.model.Root.Field.FieldType.*;
 
 @ParametersAreNonnullByDefault
 public class Wiring {
@@ -44,17 +45,37 @@ public class Wiring {
             TypeRuntimeWiring.Builder partialWiring = typeWiring;
 
             for (Entity entity : entities) {
-                Function<String, Object> findById = database.buildRead(entity);
+                Function<String, Object> findById = database.buildFindEntityById(entity.getName());
 
                 partialWiring = partialWiring.dataFetcher(
                         entity.getName(),
                         env -> findById.apply(env.getArgument("id"))
                 );
+
             }
 
             return typeWiring;
         };
     }
+
+    @Nonnull
+    private RuntimeWiring relationshipWiring(RuntimeWiring runtimeWiring, List<Entity> entities) {
+        return entities.stream()
+                .filter(this::hasRelationship)
+                .reduce(runtimeWiring, (partialRuntimeWiring, entity) -> {
+                            return partialRuntimeWiring;
+                        },
+                        (w1, w2) -> {
+                            return w1;
+
+                        });
+    }
+
+    private boolean hasRelationship(Entity entity) {
+        return entity.getFields().stream()
+                .anyMatch(field -> Root.Field.FieldType.isRelationship(field.getType()));
+    }
+
     @Nonnull
     private UnaryOperator<TypeRuntimeWiring.Builder> mutationWiring(List<Entity> entities) {
         return typeWiring -> {
@@ -62,7 +83,7 @@ public class Wiring {
             TypeRuntimeWiring.Builder partialWiring = typeWiring;
 
             for (Entity entity : entities) {
-                UnaryOperator<Object> create = database.buildCreate(entity);
+                UnaryOperator<Object> create = database.buildAddEntity(entity.getName());
 
                 partialWiring = partialWiring.dataFetcher(
                         createMutationName(entity.getName()),

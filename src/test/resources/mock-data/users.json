@@ -1,0 +1,28 @@
+{
+  "user": {
+    "1": {
+      "id": "1",
+      "name": "Ziggy",
+      "email": "ziggy@cats.com"
+    },
+    "2": {
+      "id": "2",
+      "name": "Figaro",
+      "email": "figaro@cats.com"
+    }
+  },
+  "todo": {
+    "1": {
+      "id": "1",
+      "title": "Eat",
+      "description": "Eat cat food",
+      "userId": "1"
+    },
+    "2": {
+      "id": "2",
+      "title": "Scratch",
+      "description": "Scratch stuff",
+      "userId": "1"
+    }
+  }
+}

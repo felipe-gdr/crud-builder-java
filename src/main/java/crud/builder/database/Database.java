@@ -1,24 +1,19 @@
 package crud.builder.database;
 
-import crud.builder.model.Root.Entity;
+import crud.builder.model.Root;
+import crud.builder.model.Root.Field;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.function.Consumer;
+import java.util.Collection;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 @ParametersAreNonnullByDefault
 public interface Database {
     @Nonnull
-    <T> UnaryOperator<T> buildCreate(Entity entity);
+    <T> UnaryOperator<T> buildAddEntity(String entityName);
 
     @Nonnull
-    <T> Function<String, T> buildRead(Entity entity);
-
-    @Nonnull
-    <T> UnaryOperator<T> buildUpdate(Entity entity);
-
-    @Nonnull
-    <T> Consumer<T> buildDelete(Entity entity);
+    <T> Function<String, T> buildFindEntityById(String entityName);
 }

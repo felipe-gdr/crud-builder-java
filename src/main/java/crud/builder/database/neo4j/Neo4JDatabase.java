@@ -4,13 +4,11 @@ import com.google.common.collect.ImmutableMap;
 import crud.builder.database.Database;
 import crud.builder.database.neo4j.querybuilder.Create;
 import crud.builder.database.neo4j.querybuilder.FindById;
-import crud.builder.model.Root.Entity;
 import org.neo4j.driver.v1.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
@@ -31,7 +29,7 @@ public class Neo4JDatabase implements Database, AutoCloseable {
 
     @Nonnull
     @Override
-    public UnaryOperator<Map<String, Object>> buildCreate(Entity entity) {
+    public UnaryOperator<Map<String, Object>> buildAddEntity(String entityName) {
         return value -> {
             String id = generateId();
 
@@ -41,7 +39,7 @@ public class Neo4JDatabase implements Database, AutoCloseable {
                     .build();
 
             String query = new Create()
-                    .label(labelName(entity.getName()))
+                    .label(labelName(entityName))
                     .value(mapWithId)
                     .get();
 
@@ -59,10 +57,10 @@ public class Neo4JDatabase implements Database, AutoCloseable {
 
     @Nonnull
     @Override
-    public Function<String, Map<String, Object>> buildRead(Entity entity) {
+    public Function<String, Map<String, Object>> buildFindEntityById(String entityName) {
         return id -> {
             String query = new FindById()
-                    .label(labelName(entity.getName()))
+                    .label(labelName(entityName))
                     .id(id)
                     .get();
 
@@ -76,18 +74,6 @@ public class Neo4JDatabase implements Database, AutoCloseable {
                 );
             }
         };
-    }
-
-    @Nonnull
-    @Override
-    public <T> UnaryOperator<T> buildUpdate(Entity entity) {
-        return null;
-    }
-
-    @Nonnull
-    @Override
-    public <T> Consumer<T> buildDelete(Entity entity) {
-        return null;
     }
 
     @Override

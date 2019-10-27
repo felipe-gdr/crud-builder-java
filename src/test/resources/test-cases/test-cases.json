@@ -1,0 +1,86 @@
+[
+  {
+    "description": "Add entity without relationship",
+    "query": " mutation { addUser(name: \"Garfield\" email: \"garfield@cats.com\") {id name email} } ",
+    "expected": {
+      "addUser": {
+        "id": "1",
+        "name": "Garfield",
+        "email": "garfield@cats.com"
+      }
+    }
+  },
+  {
+    "description": "Add entity with relationship",
+    "data": "users.json",
+    "query": " mutation { addTodo(title: \"Do this\" userId:\"1\") {id title user { id name email }} } ",
+    "expected": {
+      "addTodo": {
+        "id": "3",
+        "title": "Do this",
+        "user": {
+          "id": "1",
+          "name": "Ziggy",
+          "email": "ziggy@cats.com"
+        }
+      }
+    }
+  },
+  {
+    "description": "Add entity with missing required field",
+    "data": "users.json",
+    "query": " mutation { addTodo(title: \"Do this\") {id title} } ",
+    "errors": [
+      "Validation error of type MissingFieldArgument: Missing field argument userId @ 'addTodo'"
+    ]
+  },
+  {
+    "description": "Query entity with no relationship",
+    "data": "users.json",
+    "query": " query { user(id: \"1\") {id name email} } ",
+    "expected": {
+      "user": {
+        "id": "1",
+        "name": "Ziggy",
+        "email": "ziggy@cats.com"
+      }
+    }
+  },
+  {
+    "description": "Query entity with many-to-one",
+    "data": "users.json",
+    "query": " query { todo(id: \"1\") { id title user {id name email}} } ",
+    "expected": {
+      "todo": {
+        "id": "1",
+        "title": "Eat",
+        "user": {
+          "id": "1",
+          "name": "Ziggy",
+          "email": "ziggy@cats.com"
+        }
+      }
+    }
+  },
+  {
+    "description": "Query entity with one-to-many",
+    "data": "users.json",
+    "query": " query { user(id: \"1\") { id name todos { id title }} } ",
+    "expected": {
+      "user": {
+        "id": "1",
+        "name": "Ziggy",
+        "todos": [
+          {
+            "id": "1",
+            "title": "Eat"
+          },
+          {
+            "id": "2",
+            "title": "Scratch"
+          }
+        ]
+      }
+    }
+  }
+]

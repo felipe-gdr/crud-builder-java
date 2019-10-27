@@ -16,6 +16,11 @@
           "name": "todos",
           "type": "ONE_TO_MANY",
           "entity": "todo"
+        },
+        {
+          "name": "groups",
+          "entity": "group",
+          "type": "MANY_TO_MANY"
         }
       ]
     },
@@ -36,6 +41,21 @@
           "entity": "user",
           "type": "MANY_TO_ONE",
           "required": true
+        }
+      ]
+    },
+    {
+      "name": "group",
+      "fields": [
+        {
+          "name": "name",
+          "type": "STRING",
+          "required": true
+        },
+        {
+          "name": "users",
+          "entity": "user",
+          "type": "MANY_TO_MANY"
         }
       ]
     }

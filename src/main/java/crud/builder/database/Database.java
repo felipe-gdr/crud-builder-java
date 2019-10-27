@@ -1,8 +1,5 @@
 package crud.builder.database;
 
-import crud.builder.model.Root;
-import crud.builder.model.Root.Field;
-
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Collection;
@@ -16,4 +13,7 @@ public interface Database {
 
     @Nonnull
     <T> Function<String, T> buildFindEntityById(String entityName);
+
+    @Nonnull
+    <T> Function<String, Collection<T>> buildFindAssociatedCollection(String fromEntityName, String toEntityName);
 }

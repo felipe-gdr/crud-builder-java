@@ -8,12 +8,16 @@ import graphql.schema.idl.TypeRuntimeWiring;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import static crud.builder.graphql.Utils.createMutationName;
+import static crud.builder.graphql.Utils.toTypeName;
 import static crud.builder.model.Root.Field.FieldType.*;
+import static java.util.stream.Collectors.toList;
 
 @ParametersAreNonnullByDefault
 public class Wiring {
@@ -32,10 +36,13 @@ public class Wiring {
      */
     @Nonnull
     public RuntimeWiring createWiring(Root root) {
-        return RuntimeWiring.newRuntimeWiring()
+        RuntimeWiring.Builder builder = RuntimeWiring.newRuntimeWiring()
                 .type("QueryType", queryWiring(root.getEntities()))
-                .type("MutationType", mutationWiring(root.getEntities()))
-                .build();
+                .type("MutationType", mutationWiring(root.getEntities()));
+
+        builder = relationshipWiring(builder, root.getEntities());
+
+        return builder.build();
     }
 
     @Nonnull
@@ -59,33 +66,70 @@ public class Wiring {
     }
 
     @Nonnull
-    private RuntimeWiring relationshipWiring(RuntimeWiring runtimeWiring, List<Entity> entities) {
-        return entities.stream()
-                .filter(this::hasRelationship)
-                .reduce(runtimeWiring, (partialRuntimeWiring, entity) -> {
-                            return partialRuntimeWiring;
-                        },
-                        (w1, w2) -> {
-                            return w1;
+    private RuntimeWiring.Builder relationshipWiring(RuntimeWiring.Builder builder, List<Entity> entities) {
+        for (Entity entity : entities) {
+            List<Root.Field> relationships = this.getRelationships(entity);
 
-                        });
+            if (relationships.isEmpty()) {
+                continue;
+            }
+
+            builder = builder.type(
+                    toTypeName(entity.getName()),
+                    typeWiring -> {
+                        for (Root.Field relationship : relationships) {
+                            if (relationship.getType() == ONE_TO_ONE || relationship.getType() == MANY_TO_ONE) {
+                                Function<String, Object> findById = database.buildFindEntityById(relationship.getEntity());
+
+                                typeWiring = typeWiring.dataFetcher(
+                                        relationship.getName(),
+                                        env -> {
+                                            Map<String, Object> source = env.getSource();
+
+                                            Object idValue = source.get(Utils.getIdFieldName(relationship.getEntity()));
+
+                                            return findById.apply(idValue.toString());
+                                        }
+                                );
+                            } else if (relationship.getType() == ONE_TO_MANY || relationship.getType() == MANY_TO_MANY) {
+                                Function<String, Collection<Object>> findAssociatedCollection =
+                                        database.buildFindAssociatedCollection(entity.getName(), relationship.getEntity());
+
+                                typeWiring = typeWiring.dataFetcher(
+                                        relationship.getName(),
+                                        env -> {
+                                            Map<String, Object> source = env.getSource();
+
+                                            Object idValue = source.get("id");
+
+                                            return findAssociatedCollection.apply(idValue.toString());
+                                        }
+                                );
+                            }
+                        }
+
+                        return typeWiring;
+                    }
+            );
+
+        }
+
+        return builder;
     }
 
-    private boolean hasRelationship(Entity entity) {
+    private List<Root.Field> getRelationships(Entity entity) {
         return entity.getFields().stream()
-                .anyMatch(field -> Root.Field.FieldType.isRelationship(field.getType()));
+                .filter(field -> Root.Field.FieldType.isRelationship(field.getType()))
+                .collect(toList());
     }
 
     @Nonnull
     private UnaryOperator<TypeRuntimeWiring.Builder> mutationWiring(List<Entity> entities) {
         return typeWiring -> {
-
-            TypeRuntimeWiring.Builder partialWiring = typeWiring;
-
             for (Entity entity : entities) {
-                UnaryOperator<Object> create = database.buildAddEntity(entity.getName());
+                UnaryOperator create = database.buildAddEntity(entity.getName());
 
-                partialWiring = partialWiring.dataFetcher(
+                typeWiring = typeWiring.dataFetcher(
                         createMutationName(entity.getName()),
                         env -> create.apply(env.getArguments())
                 );

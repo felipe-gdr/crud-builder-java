@@ -8,6 +8,7 @@ import org.neo4j.driver.v1.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Collection;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
@@ -76,8 +77,15 @@ public class Neo4JDatabase implements Database, AutoCloseable {
         };
     }
 
+    @Nonnull
     @Override
-    public void close() throws Exception {
+    public Function<String, Collection> buildFindAssociatedCollection(String fromEntityName, String toEntityName) {
+        // TODO: implement me
+        return null;
+    }
+
+    @Override
+    public void close() {
         this.driver.close();
     }
 }

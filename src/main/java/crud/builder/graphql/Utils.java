@@ -19,4 +19,9 @@ public final class Utils {
     public static String createMutationName(String entityName) {
         return "add" + capitalize(entityName);
     }
+
+    @Nonnull
+    public static String getIdFieldName(String entityName) {
+        return entityName + "Id";
+    }
 }

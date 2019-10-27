@@ -9,9 +9,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import java.util.List;
+import java.util.Objects;
 
-import static crud.builder.graphql.Utils.createMutationName;
-import static crud.builder.graphql.Utils.toTypeName;
+import static crud.builder.graphql.Utils.*;
+import static crud.builder.model.Root.Field.FieldType.MANY_TO_ONE;
+import static crud.builder.model.Root.Field.FieldType.ONE_TO_ONE;
 import static graphql.Scalars.*;
 import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
@@ -74,26 +76,40 @@ public class Types {
         // Can we be more functional here?
         for (Entity entity : root.getEntities()) {
             List<GraphQLArgument> arguments = entity.getFields().stream()
-                    // TODO: deal with relationships
-                    // the instanceof check is here to add only scalars to arguments of add mutations
-                    .filter(field -> getGraphQLInputType(field) instanceof GraphQLScalarType)
-                    .map(field ->
-                            newArgument()
-                                    .name(field.getName())
-                                    .type(
-                                            field.getRequired()
-                                                    ? nonNull(getGraphQLInputType(field))
-                                                    : getGraphQLInputType(field)
-                                    )
-                                    .build()
+                    .map(field -> {
+                                if (getGraphQLInputType(field) instanceof GraphQLScalarType) {
+                                    return newArgument()
+                                            .name(field.getName())
+                                            .type(
+                                                    field.getRequired()
+                                                            ? nonNull(getGraphQLInputType(field))
+                                                            : getGraphQLInputType(field)
+                                            )
+                                            .build();
+                                } else if (field.getType() == ONE_TO_ONE || field.getType() == MANY_TO_ONE) {
+                                    return newArgument()
+                                            .name(getIdFieldName(field.getName()))
+                                            .type(
+                                                    field.getRequired()
+                                                            ? nonNull(GraphQLID)
+                                                            : GraphQLID
+                                            )
+                                            .build();
+                                }
+
+                                // TODO handle *TO_MANY relationships on entity creation
+
+                                return null;
+                            }
                     )
+                    .filter(Objects::nonNull)
                     .collect(toList());
 
             builder = builder
                     .field(newFieldDefinition()
                             .name(createMutationName(entity.getName()))
                             .arguments(arguments)
-                            .type(GraphQLTypeReference.typeRef(toTypeName(entity.getName())))
+                            .type(typeRef(toTypeName(entity.getName())))
                     );
         }
 
@@ -105,8 +121,10 @@ public class Types {
     private GraphQLType getGraphQLType(Field field) {
         switch (field.getType()) {
             case MANY_TO_ONE:
+            case ONE_TO_ONE:
                 return typeRef(toTypeName(field.getEntity()));
             case ONE_TO_MANY:
+            case MANY_TO_MANY:
                 return list(typeRef(toTypeName(field.getEntity())));
             case STRING:
                 return GraphQLString;

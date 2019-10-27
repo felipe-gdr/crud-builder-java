@@ -24,5 +24,17 @@
       "description": "Scratch stuff",
       "userId": "1"
     }
+  },
+  "group": {
+    "1001": {
+      "id": "1001",
+      "name": "administrators"
+    }
+  },
+  "group_user": {
+    "1001": [
+      "1",
+      "2"
+    ]
   }
 }

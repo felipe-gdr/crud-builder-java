@@ -24,4 +24,9 @@ public final class Utils {
     public static String getIdFieldName(String entityName) {
         return entityName + "Id";
     }
+
+    @Nonnull
+    public static String getIdsFieldName(String entityName) {
+        return entityName + "Ids";
+    }
 }

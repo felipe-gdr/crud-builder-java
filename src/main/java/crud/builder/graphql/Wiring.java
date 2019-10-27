@@ -14,8 +14,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import static crud.builder.graphql.Utils.createMutationName;
-import static crud.builder.graphql.Utils.toTypeName;
+import static crud.builder.graphql.Utils.*;
 import static crud.builder.model.Root.Field.FieldType.*;
 import static java.util.stream.Collectors.toList;
 
@@ -58,7 +57,6 @@ public class Wiring {
                         entity.getName(),
                         env -> findById.apply(env.getArgument("id"))
                 );
-
             }
 
             return typeWiring;
@@ -86,14 +84,14 @@ public class Wiring {
                                         env -> {
                                             Map<String, Object> source = env.getSource();
 
-                                            Object idValue = source.get(Utils.getIdFieldName(relationship.getEntity()));
+                                            Object idValue = source.get(getIdFieldName(relationship.getEntity()));
 
                                             return findById.apply(idValue.toString());
                                         }
                                 );
-                            } else if (relationship.getType() == ONE_TO_MANY || relationship.getType() == MANY_TO_MANY) {
+                            } else if (relationship.getType() == ONE_TO_MANY) {
                                 Function<String, Collection<Object>> findAssociatedCollection =
-                                        database.buildFindAssociatedCollection(entity.getName(), relationship.getEntity());
+                                        database.buildFindOneToManyCollection(entity.getName(), relationship.getEntity());
 
                                 typeWiring = typeWiring.dataFetcher(
                                         relationship.getName(),
@@ -105,6 +103,22 @@ public class Wiring {
                                             return findAssociatedCollection.apply(idValue.toString());
                                         }
                                 );
+                            } else if (relationship.getType() == MANY_TO_MANY) {
+                                Function<String, Collection<Object>> findAssociatedCollection =
+                                        database.buildFindManyToManyCollection(entity.getName(), relationship.getEntity());
+
+                                typeWiring = typeWiring.dataFetcher(
+                                        relationship.getName(),
+                                        env -> {
+                                            Map<String, Object> source = env.getSource();
+
+                                            Object idValue = source.get("id");
+
+                                            return findAssociatedCollection.apply(idValue.toString());
+                                        }
+                                );
+                            } else {
+                                throw new RuntimeException("Relationship type not implemented: " + relationship.getType());
                             }
                         }
 

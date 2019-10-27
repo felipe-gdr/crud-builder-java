@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import crud.builder.database.Database;
+import org.apache.commons.lang3.text.WordUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -11,7 +12,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 @ParametersAreNonnullByDefault
@@ -62,7 +65,7 @@ public class InMemoryDatabase implements Database {
 
     @Nonnull
     @Override
-    public Function<String, Collection<Map<String, Object>>> buildFindAssociatedCollection(
+    public Function<String, Collection<Map<String, Object>>> buildFindOneToManyCollection(
             String fromEntityName,
             String toEntityName
     ) {
@@ -73,6 +76,42 @@ public class InMemoryDatabase implements Database {
                 .collect(toList());
     }
 
+    @Nonnull
+    @Override
+    public Function<String, Collection<Map<String, Object>>> buildFindManyToManyCollection(String fromEntityName, String toEntityName) {
+        String tableName = Stream.of(fromEntityName, toEntityName)
+                .sorted()
+                .collect(joining("_"));
+
+        boolean isFromLeftEntity = tableName.startsWith(fromEntityName);
+
+        return id -> {
+            List ids = isFromLeftEntity
+                    ? (List) data.get(tableName).get(id)
+                    : data.get(tableName)
+                    .entrySet()
+                    .stream()
+                    .filter(entry ->
+                            ((List) entry.getValue())
+                                    .stream()
+                                    .filter(value -> value.equals(id))
+                                    .findAny()
+                                    .isPresent()
+                    )
+                    .map(Map.Entry::getKey)
+                    .collect(toList());
+
+            return data.get(toEntityName)
+                    .entrySet()
+                    .stream()
+                    .filter(entry -> ids.contains(entry.getKey()))
+                    .map(Map.Entry::getValue)
+                    .collect(toList());
+        };
+    }
+
+
+    @Nonnull
     private String getNextId(String entityName) {
         return Optional.ofNullable(data.get(entityName))
                 .flatMap(data ->
@@ -86,4 +125,5 @@ public class InMemoryDatabase implements Database {
                 )
                 .orElse(0) + 1 + "";
     }
+
 }

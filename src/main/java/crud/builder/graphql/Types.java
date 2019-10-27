@@ -12,8 +12,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static crud.builder.graphql.Utils.*;
-import static crud.builder.model.Root.Field.FieldType.MANY_TO_ONE;
-import static crud.builder.model.Root.Field.FieldType.ONE_TO_ONE;
+import static crud.builder.model.Root.Field.FieldType.*;
 import static graphql.Scalars.*;
 import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
@@ -95,11 +94,18 @@ public class Types {
                                                             : GraphQLID
                                             )
                                             .build();
+                                } else if (field.getType() == ONE_TO_MANY || field.getType() == MANY_TO_MANY) {
+                                    return newArgument()
+                                            .name(getIdsFieldName(field.getName()))
+                                            .type(
+                                                    field.getRequired()
+                                                            ? nonNull(list(GraphQLID))
+                                                            : list(GraphQLID)
+                                            )
+                                            .build();
                                 }
 
-                                // TODO handle *TO_MANY relationships on entity creation
-
-                                return null;
+                                throw new RuntimeException("Unsupported field type: " + field.getType());
                             }
                     )
                     .filter(Objects::nonNull)
@@ -155,7 +161,7 @@ public class Types {
                 .field(newFieldDefinition().name("id").type(nonNull(GraphQLID)))
                 .name(typeName);
 
-        // Can we do this on a more functional way, without mutating "builder" on a loop?
+        // TODO: Can we do this on a more functional way, without mutating "builder" on a loop?
         for (Field field : entity.getFields()) {
             GraphQLOutputType graphQLType = getGraphQLOutputType(field);
 

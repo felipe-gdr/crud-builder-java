@@ -35,6 +35,23 @@
     ]
   },
   {
+    "description": "Add entity with many-to-many relationship",
+    "data": "users.json",
+    "query": " mutation { addUser(name: \"Garfield\" groupsIds: [\"1\"]) { id name groups { id name }} } ",
+    "expected": {
+      "addUser": {
+        "id": "3",
+        "name": "Garfield",
+        "groups": [
+          {
+            "id": "1",
+            "name": "administrators"
+          }
+        ]
+      }
+    }
+  },
+  {
     "description": "Query entity with no relationship",
     "data": "users.json",
     "query": " query { user(id: \"1\") {id name email} } ",
@@ -78,6 +95,44 @@
           {
             "id": "2",
             "title": "Scratch"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "description": "Query entity with many-to-many relationship, from right to left",
+    "data": "users.json",
+    "query": " query { user(id: \"1\") { id name groups { id name }} } ",
+    "expected": {
+      "user": {
+        "id": "1",
+        "name": "Ziggy",
+        "groups": [
+          {
+            "id": "1001",
+            "name": "administrators"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "description": "Query entity with many-to-many relationship, from left to right",
+    "data": "users.json",
+    "query": " query { group(id: \"1001\") { id name users { id name }} } ",
+    "expected": {
+      "group": {
+        "id": "1001",
+        "name": "administrators",
+        "users": [
+          {
+            "id": "1",
+            "name": "Ziggy"
+          },
+          {
+            "id": "2",
+            "name": "Figaro"
           }
         ]
       }

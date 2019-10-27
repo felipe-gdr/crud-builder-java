@@ -79,7 +79,7 @@ public class Neo4JDatabase implements Database, AutoCloseable {
 
     @Nonnull
     @Override
-    public Function<String, Collection> buildFindAssociatedCollection(String fromEntityName, String toEntityName) {
+    public Function<String, Collection> buildFindOneToManyCollection(String fromEntityName, String toEntityName) {
         // TODO: implement me
         return null;
     }
@@ -87,5 +87,12 @@ public class Neo4JDatabase implements Database, AutoCloseable {
     @Override
     public void close() {
         this.driver.close();
+    }
+
+    @Nonnull
+    @Override
+    public <T> Function<String, Collection<T>> buildFindManyToManyCollection(String fromEntityName, String toEntityName) {
+        // TODO: implement me
+        return null;
     }
 }

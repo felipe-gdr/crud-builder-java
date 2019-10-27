@@ -15,5 +15,8 @@ public interface Database {
     <T> Function<String, T> buildFindEntityById(String entityName);
 
     @Nonnull
-    <T> Function<String, Collection<T>> buildFindAssociatedCollection(String fromEntityName, String toEntityName);
+    <T> Function<String, Collection<T>> buildFindOneToManyCollection(String fromEntityName, String toEntityName);
+
+    @Nonnull
+    <T> Function<String, Collection<T>> buildFindManyToManyCollection(String fromEntityName, String toEntityName);
 }

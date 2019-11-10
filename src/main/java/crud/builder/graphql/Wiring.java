@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import static crud.builder.graphql.Utils.*;
+import static crud.builder.graphql.UtilsKt.*;
 import static crud.builder.model.Root.Field.FieldType.*;
 import static java.util.stream.Collectors.toList;
 

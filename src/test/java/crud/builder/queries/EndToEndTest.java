@@ -67,10 +67,11 @@ class EndToEndTest {
     @ParameterizedTest
     @MethodSource("getTestCases")
     void test(TestCase testCase) {
-        final String data = testCase.data;
-        final String query = testCase.query;
-        final Map expected = testCase.expected;
-        final List<String> errors = testCase.errors;
+        final String data = testCase.getData();
+        final String query = testCase.getQuery();
+        final Map expected = testCase.getExpected();
+        final List<String> errors = testCase.getErrors();
+        final String description = testCase.getDescription();
 
         Database inMemoryDatabase = new InMemoryDatabase(data != null ? mockData.get(data) : null);
 
@@ -81,17 +82,17 @@ class EndToEndTest {
         if (errors != null && !errors.isEmpty()) {
             List<String> resultErrors = result.getErrors().stream().map(GraphQLError::getMessage).collect(toList());
 
-            assertThat(resultErrors, is(errors));
+            assertThat(description, resultErrors, is(errors));
         } else {
-            assertThat(result.getErrors().size(), is(0));
+            assertThat(description, result.getErrors().size(), is(0));
         }
 
         Map resultData = result.getData();
 
         if (expected != null) {
-            assertThat(resultData.toString(), is(expected.toString()));
+            assertThat(description, resultData.toString(), is(expected.toString()));
         } else {
-            assertThat(resultData, nullValue());
+            assertThat(description, resultData, nullValue());
         }
     }
 }

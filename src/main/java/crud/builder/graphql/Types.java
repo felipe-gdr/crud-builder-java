@@ -11,7 +11,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 import java.util.Objects;
 
-import static crud.builder.graphql.Utils.*;
+import static crud.builder.graphql.UtilsKt.*;
 import static crud.builder.model.Root.Field.FieldType.*;
 import static graphql.Scalars.*;
 import static graphql.schema.GraphQLArgument.newArgument;
@@ -95,14 +95,9 @@ public class Types {
                                             )
                                             .build();
                                 } else if (field.getType() == ONE_TO_MANY || field.getType() == MANY_TO_MANY) {
-                                    return newArgument()
-                                            .name(getIdsFieldName(field.getName()))
-                                            .type(
-                                                    field.getRequired()
-                                                            ? nonNull(list(GraphQLID))
-                                                            : list(GraphQLID)
-                                            )
-                                            .build();
+                                    // Many-to-many and one-to-many relationships don't generate fields for add mutations
+                                    // TODO: Create new mutation types for associating *-to-many entities
+                                    return null;
                                 }
 
                                 throw new RuntimeException("Unsupported field type: " + field.getType());

@@ -11,7 +11,7 @@
     }
   },
   {
-    "description": "Add entity with relationship",
+    "description": "Add entity with many-to-one relationship",
     "data": "users.json",
     "query": " mutation { addTodo(title: \"Do this\" userId:\"1\") {id title user { id name email }} } ",
     "expected": {
@@ -35,21 +35,12 @@
     ]
   },
   {
-    "description": "Add entity with many-to-many relationship",
+    "description": "Many-to-many field is not part of the schema",
     "data": "users.json",
     "query": " mutation { addUser(name: \"Garfield\" groupsIds: [\"1\"]) { id name groups { id name }} } ",
-    "expected": {
-      "addUser": {
-        "id": "3",
-        "name": "Garfield",
-        "groups": [
-          {
-            "id": "1",
-            "name": "administrators"
-          }
-        ]
-      }
-    }
+    "errors": [
+      "Validation error of type UnknownArgument: Unknown field argument groupsIds @ 'addUser'"
+    ]
   },
   {
     "description": "Query entity with no relationship",
@@ -64,7 +55,7 @@
     }
   },
   {
-    "description": "Query entity with many-to-one",
+    "description": "Query entity with many-to-one relationship",
     "data": "users.json",
     "query": " query { todo(id: \"1\") { id title user {id name email}} } ",
     "expected": {
@@ -80,7 +71,7 @@
     }
   },
   {
-    "description": "Query entity with one-to-many",
+    "description": "Query entity with one-to-many relationship",
     "data": "users.json",
     "query": " query { user(id: \"1\") { id name todos { id title }} } ",
     "expected": {

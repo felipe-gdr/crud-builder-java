@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import crud.builder.database.Database;
-import org.apache.commons.lang3.text.WordUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

@@ -7,7 +7,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 public class ToString {
-    private final SchemaPrinter schemaPrinter = new SchemaPrinter();
+    private static final SchemaPrinter schemaPrinter = new SchemaPrinter();
 
     /**
      * Convert an in-memory {@link GraphQLSchema} to String format
